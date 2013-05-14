@@ -1,0 +1,67 @@
+#export LD_LIBRARY_PATH needed for dynamic links
+
+global _mythenBasename = "image_"
+
+def mythenon '{
+  global _mythenIsOn
+  printf("Finger Lakes Instrumentation CCD ")
+  if (_mythenIsOn != 0) {
+    printf("was and still is enabled.\n")
+  } else {
+    unix("export LD_LIBRARY_PATH=~/slsDetectorsPackage/bin:$LD_LIBRARY_PATH && sls_detector_put config ~/slsDetectorsPackage/examples/mythen.config")
+    unix("export LD_LIBRARY_PATH=~/slsDetectorsPackage/bin:$LD_LIBRARY_PATH && sls_detector_put settings standard")
+    unix("export LD_LIBRARY_PATH=~/slsDetectorsPackage/bin:$LD_LIBRARY_PATH && sls_detector_put threshold 20000")
+    # add to user_precount
+    cdef("user_precount","_mythen_user_precount(); ","mythen_user_precount_key",0x20)
+}'
+
+def _mythen_user_precount() '{
+    global COUNT_TIME
+    global _mythenIsOn
+    global _isCt
+    local outdir
+    if (!_mythenIsOn) {
+        return
+    }
+    dname = _mythen_datafilename(_isCt)
+    # display the file-name if this count is initiated by ct
+    if (_isCt > 0) {
+        printf("Mythen data-file name: %s\n",dname)
+    }
+    unix(sprintf("export LD_LIBRARY_PATH=~/slsDetectorsPackage/bin:$LD_LIBRARY_PATH && sls_detector_put exptime %d", COUNT_TIME))
+    _mythenIsExposing = 1
+    unix("export LD_LIBRARY_PATH=~/slsDetectorsPackage/bin:$LD_LIBRARY_PATH && sls_detector_acquire")
+}'
+
+def mythenoff '
+    cdef("user_precount", "", "mythen_user_precount_key", "delete")
+'
+
+def _mythen_datafilename(_isCt) '{
+  global _isCt
+  global _mythenBasename
+  global _mythenGroupDirs
+  global _mythen_last_datafilename
+  global COUNT_TIME,SCAN_N,NPTS,NPTS_SUB
+  local data_dir
+  local dname
+
+  # distinguish between absolute paths and those relative to the 
+  # home directory
+  data_dir = _dir_absolute_datapath("mythen", _isCt, !_isCt)
+
+  dname = ""
+  if (_isCt) {
+    # if this count is initianted by ct then a running number is used
+    dname = sprintf("%s%s.raw",data_dir,_dir_ct_name(_mythenBasename))
+  } else {
+    # compile data-file name using the current scan, point and exposure 
+    # number together with the data-directory and base file name
+    dname = sprintf("%s%s%05d_%05d_%02d.raw",\\
+		    data_dir,_mythenBasename,SCAN_N,NPTS,NPTS_SUB)
+  }
+
+  return (dname)
+}'
+
+
