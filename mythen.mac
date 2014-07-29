@@ -1,7 +1,9 @@
 
 global _mythenBasename
+global _mythenIsOn
 global _mythenInstallationPath
 _mythenBasename = "image_"
+_mythenIsOn = 0
 
 _mythenInstallationPath = "~/slsDetectorsPackage/bin"
 global _ldLibraryPath
@@ -14,7 +16,7 @@ def mythenon '{
   if (_mythenIsOn != 0) {
     printf("was and still is enabled.\n")
   } else {
-    unix(sprintf("%s && sls_detector_put config ~/slsDetectorsPackage/examples/mythen.config", _ldLibraryPath)
+    unix(sprintf("%s && sls_detector_put config ~/slsDetectorsPackage/examples/mythen.config", _ldLibraryPath))
     unix(sprintf("%s && sls_detector_put settings standard", _ldLibraryPath))
     unix(sprintf("%s && sls_detector_put threshold 20000", _ldLibraryPath))
     # add to user_precount
@@ -34,11 +36,12 @@ def _mythen_user_precount() '{
     dname = _mythen_datafilename(_isCt)
     # display the file-name if this count is initiated by ct
     if (_isCt > 0) {
-        printf("Mythen data-file name: %s\n",dname)
+        printf("Mythen data-file name: %s_0.raw\n",dname)
     }
+    unix(sprintf("%s && sls_detector_put index 0 >& /dev/null", _ldLibraryPath))
     unix(sprintf("%s && sls_detector_put exptime %d >& /dev/null", _ldLibraryPath, COUNT_TIME))
     _mythenIsExposing = 1
-    unix(sprintf("%s && sls_detector_acquire >& /dev/null &"), _ldLibraryPath)
+    unix(sprintf("%s && sls_detector_acquire >& /dev/null &", _ldLibraryPath))
     }'
 
 def mythenoff '
