@@ -39,7 +39,6 @@ def _mythen_user_precount() '{
         printf("Mythen data-file name: %s_0.raw\n",dname)
     }
     unix(sprintf("%s && sls_detector_put index 0 >& /dev/null", _ldLibraryPath))
-    printf("%s && sls_detector_put exptime %f >& /dev/null", _ldLibraryPath, COUNT_TIME)
     unix(sprintf("%s && sls_detector_put exptime %f >& /dev/null", _ldLibraryPath, COUNT_TIME))
     _mythenIsExposing = 1
     unix(sprintf("%s && sls_detector_acquire >& /dev/null &", _ldLibraryPath))
