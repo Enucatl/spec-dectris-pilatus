@@ -1,7 +1,7 @@
 spec-mythen
 ===========
 
-spec bindings for the mythen detector with sls_detector_* commandline binaries
+[spec](http://www.certif.com/) bindings for the mythen detector with sls_detector_* commandline binaries
 
 Available commands
 ------------------
