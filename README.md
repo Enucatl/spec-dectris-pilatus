@@ -23,14 +23,14 @@ Available commands
 
 ### Private functions
 * `_mythen_datafilename(_isCt)`:
-    * sets the output file name for the upcoming exposure, the name is built
+    * set the output file name for the upcoming exposure, and format it
     differently depending of which command triggered the exposure (`ct` or
     `*scan`).
 * `_mythen_user_precount()`:
-    * sets the file index to `0` with `sls_detector_put` since spec already
+    * set the file index to `0` with `sls_detector_put` since spec already
     increases the index on its own 
-    * sets the exposure time with `sls_detector_put`
-    * triggers the exposure with `sls_detector_acquire`
+    * set the exposure time with `sls_detector_put`
+    * trigger the exposure with `sls_detector_acquire`
 
 Usage
 -----
