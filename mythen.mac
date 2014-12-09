@@ -1,4 +1,3 @@
-
 global _mythenBasename
 global _mythenIsOn
 global _mythenInstallationPath
@@ -11,19 +10,19 @@ _ldLibraryPath = sprintf("export LD_LIBRARY_PATH=%s:$LD_LIBRARY_PATH", _mythenIn
 #export LD_LIBRARY_PATH needed for dynamic links
 
 def mythenon '{
-  global _mythenIsOn
-  printf("Mythen turning on...")
-  if (_mythenIsOn != 0) {
-    printf("was and still is enabled.\n")
-  } else {
-    unix(sprintf("%s && sls_detector_put config ~/slsDetectorsPackage/examples/mythen.config", _ldLibraryPath))
-    unix(sprintf("%s && sls_detector_put settings standard", _ldLibraryPath))
-    unix(sprintf("%s && sls_detector_put threshold 20000", _ldLibraryPath))
-    
+    global _mythenIsOn
+    printf("Mythen turning on...")
+    if (_mythenIsOn != 0) {
+        printf("was and still is enabled.\n")
+    } else {
+        unix(sprintf("%s && sls_detector_put config ~/slsDetectorsPackage/examples/mythen.config", _ldLibraryPath))
+        unix(sprintf("%s && sls_detector_put settings standard", _ldLibraryPath))
+        unix(sprintf("%s && sls_detector_put threshold 20000", _ldLibraryPath))
+
     # add to user_precount
-    cdef("user_precount", "_mythen_user_precount(); ", "mythen_user_precount_key", 0x20)
-  }
-  _mythenIsOn = 1
+        cdef("user_precount", "_mythen_user_precount(); ", "mythen_user_precount_key", 0x20)
+    }
+    _mythenIsOn = 1
 }'
 
 def _mythen_user_precount() '{
@@ -51,31 +50,31 @@ def mythenoff '
 '
 
 def _mythen_datafilename(_isCt) '{
-  global _isCt
-  global _mythenBasename
-  global _mythenGroupDirs
-  global _mythen_last_datafilename
-  global COUNT_TIME, SCAN_N, NPTS, NPTS_SUB
-  local data_dir
-  local dname
-  local fullname
+    global _isCt
+    global _mythenBasename
+    global _mythenGroupDirs
+    global _mythen_last_datafilename
+    global COUNT_TIME, SCAN_N, NPTS, NPTS_SUB
+    local data_dir
+    local dname
+    local fullname
 
-  # distinguish between absolute paths and those relative to the 
-  # home directory
-  data_dir = _dir_absolute_datapath("mythen", _isCt, !_isCt)
+    # distinguish between absolute paths and those relative to the 
+    # home directory
+    data_dir = _dir_absolute_datapath("mythen", _isCt, !_isCt)
 
-  dname = ""
-  unix(sprintf("%s && sls_detector_put outdir %s >& /dev/null", _ldLibraryPath, data_dir))
-  if (_isCt) {
-    # if this count is initianted by ct then a running number is used
-    dname = sprintf("%s", _dir_ct_name(_mythenBasename))
-  } else {
-    # compile data-file name using the current scan, point and exposure 
-    # number together with the data-directory and base file name
-    dname = sprintf("%s%05d_%05d_%02d", _mythenBasename, SCAN_N, NPTS, NPTS_SUB)
-  }
-  unix(sprintf("%s && sls_detector_put fname %s >& /dev/null", _ldLibraryPath, dname))
-  fullname = sprintf("%s%s", data_dir, dname)
+    dname = ""
+    unix(sprintf("%s && sls_detector_put outdir %s >& /dev/null", _ldLibraryPath, data_dir))
+    if (_isCt) {
+        # if this count is initianted by ct then a running number is used
+        dname = sprintf("%s", _dir_ct_name(_mythenBasename))
+    } else {
+        # compile data-file name using the current scan, point and exposure 
+        # number together with the data-directory and base file name
+        dname = sprintf("%s%05d_%05d_%02d", _mythenBasename, SCAN_N, NPTS, NPTS_SUB)
+    }
+    unix(sprintf("%s && sls_detector_put fname %s >& /dev/null", _ldLibraryPath, dname))
+    fullname = sprintf("%s%s", data_dir, dname)
 
-  return (fullname)
+    return (fullname)
 }'
