@@ -1,4 +1,4 @@
-spec-pilatus
+spec-dectris-pilatus
 ===========
 
 [spec](http://www.certif.com/) bindings for the Pilatus 300k detector by
