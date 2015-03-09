@@ -3,6 +3,61 @@ global _pilatusIsOn
 global _pilatusServerAddress
 _pilatusBasename = "image_"
 _pilatusIsOn = 0
+global _pilatusROIx1, _pilatusROIy1, _pilatusROIx2, _pilatusROIy2
+
+def pilatus_roi '{
+    global _pilatusROIx1, _pilatusROIy1, _pilatusROIx2, _pilatusROIy2
+    if ($# != 4) {
+        printf("Usage: $0 [<upper-left x1> <upper-left y1> <lower-right x2> <lower-right y2>]\n")
+        return
+    }
+    if ($1 < 0) {
+        _pilatusROIx1 = 0
+    }
+    else {
+        if ($1 > 487) {
+            _pilatusROIx1 = 487
+        }
+        else {
+            _pilatusROIx1 = $1
+        }
+    }
+    if ($2 < 0) {
+        _pilatusROIy1 = 0
+    }
+    else {
+        if ($2 > 619) {
+            _pilatusROIy1 = 619
+        }
+        else {
+            _pilatusROIy1 = $2
+        }
+    }
+    if ($3 < 0) {
+        _pilatusROIx2 = 0
+    }
+    else {
+        if ($3 > 487) {
+            _pilatusROIx2 = 487
+        }
+        else {
+            _pilatusROIx2 = $3
+        }
+    }
+    if ($4 < 0) {
+        _pilatusROIy2 = 0
+    }
+    else {
+        if ($4 > 619) {
+            _pilatusROIy2 = 619
+        }
+        else {
+            _pilatusROIy2 = $4
+        }
+    }
+    printf("Region of interest: (%d, %d) (%d, %d)\n",\\
+           _pilatusROIx1, _pilatusROIy1, _pilatusROIx2, _pilatusROIy2)
+}'
 
 def pilatuson '{
     global _pilatusIsOn
@@ -67,11 +122,16 @@ def _pilatus_move_files_postcount() '{
 
 def _pilatus_move_files_postscan() '{
     local data_dir
+    global _pilatusROIx1, _pilatusROIy1, _pilatusROIx2, _pilatusROIy2
     # distinguish between absolute paths and those relative to the 
     # home directory
     data_dir = _dir_absolute_datapath("pilatus", _isCt, !_isCt)
     unix(sprintf("scp det@%s:~/spec_images/* %s > /dev/null", _pilatusServerAddress, data_dir))
     unix(sprintf("ssh det@%s \'rm -rf /home/det/spec_images/*\'", _pilatusServerAddress))
+    unix(sprintf("pilatus2hdf5.py --remove %s --roi %d %d %d %d",\\
+                data_dir,\\
+                _pilatusROIx1, _pilatusROIy1, _pilatusROIx2, _pilatusROIy2))
+    p sprintf("created %s.hdf5", substr(data_dir, 0, length(data_dir) - 1))
 }'
 
 def pilatusoff '
@@ -92,11 +152,11 @@ def _pilatus_datafilename(_isCt) '{
     local dname
     if (_isCt) {
         # if this count is initianted by ct then a running number is used
-        dname = sprintf("%s.tif", _dir_ct_name(_pilatusBasename))
+        dname = sprintf("%s", _dir_ct_name(_pilatusBasename))
     } else {
         # compile data-file name using the current scan, point and exposure 
         # number together with the data-directory and base file name
-        dname = sprintf("%s%05d_%05d_%02d.tif", _pilatusBasename, SCAN_N, NPTS, NPTS_SUB)
+        dname = sprintf("%s%05d_%05d_%02d", _pilatusBasename, SCAN_N, NPTS, NPTS_SUB)
     }
 
     return (dname)
