@@ -2,7 +2,6 @@ global _pilatusBasename
 global _pilatusIsOn
 global _pilatusServerAddress
 _pilatusBasename = "image_"
-_pilatusIsOn = 0
 global _pilatusROIx1, _pilatusROIy1, _pilatusROIx2, _pilatusROIy2
 global _max_x
 global _max_y
@@ -78,6 +77,7 @@ def pilatuson '{
     } else {
         connected = sock_par(sprintf("%s:41234", _pilatusServerAddress), "connect")
         if (connected == 1) {
+            sock_par(sprintf("%s:41234", _pilatusServerAddress), "timeout", 0)
             sock_put(sprintf("%s:41234", _pilatusServerAddress), "Nimages 1\n")
             p "set N images to 1:", sock_get(sprintf("%s:41234", _pilatusServerAddress))
             sock_put(sprintf("%s:41234", _pilatusServerAddress), "SetThreshold 20000\n")
@@ -91,7 +91,6 @@ def pilatuson '{
             p "set image path to ~/spec_images", sock_get(sprintf("%s:41234", _pilatusServerAddress))
             sock_put(sprintf("%s:41234", _pilatusServerAddress), "LdFlatField off\n")
             p "unload flat field correction", sock_get(sprintf("%s:41234", _pilatusServerAddress))
-            p "status is", sock_get(sprintf("%s:41234", _pilatusServerAddress))
         }
         else {
             printf("couldn\'t connect to the server %s:41234, check the ip address", _pilatusServerAddress)
