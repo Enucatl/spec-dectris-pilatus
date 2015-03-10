@@ -15,8 +15,8 @@ def pilatus_roi '{
         _pilatusROIx1 = 0
     }
     else {
-        if ($1 > 487) {
-            _pilatusROIx1 = 487
+        if ($1 > 619) {
+            _pilatusROIx1 = 619
         }
         else {
             _pilatusROIx1 = $1
@@ -26,8 +26,8 @@ def pilatus_roi '{
         _pilatusROIy1 = 0
     }
     else {
-        if ($2 > 619) {
-            _pilatusROIy1 = 619
+        if ($2 > 487) {
+            _pilatusROIy1 = 487
         }
         else {
             _pilatusROIy1 = $2
@@ -37,8 +37,8 @@ def pilatus_roi '{
         _pilatusROIx2 = 0
     }
     else {
-        if ($3 > 487) {
-            _pilatusROIx2 = 487
+        if ($3 > 619) {
+            _pilatusROIx2 = 619
         }
         else {
             _pilatusROIx2 = $3
@@ -48,8 +48,8 @@ def pilatus_roi '{
         _pilatusROIy2 = 0
     }
     else {
-        if ($4 > 619) {
-            _pilatusROIy2 = 619
+        if ($4 > 487) {
+            _pilatusROIy2 = 487
         }
         else {
             _pilatusROIy2 = $4
@@ -111,16 +111,16 @@ def _pilatus_user_precount() '{
         printf("Pilatus file name: %s%s\n", data_dir, filename)
     }
     sock_put(sprintf("%s:41234", _pilatusServerAddress), sprintf("Exptime %f\n", COUNT_TIME))
-    p "set exposure time", sock_get(sprintf("%s:41234", _pilatusServerAddress))
+    sock_get(sprintf("%s:41234", _pilatusServerAddress))
     sock_put(sprintf("%s:41234", _pilatusServerAddress), sprintf("Exposure %s\n", filename))
-    p "expose", sock_get(sprintf("%s:41234", _pilatusServerAddress))
+    sock_get(sprintf("%s:41234", _pilatusServerAddress))
 }'
 
 def _pilatus_move_files_postcount() '{
     local data_dir
     # distinguish between absolute paths and those relative to the 
     # home directory
-    p sock_get(sprintf("%s:41234", _pilatusServerAddress))
+    sock_get(sprintf("%s:41234", _pilatusServerAddress))
     wait(8)
     data_dir = _dir_absolute_datapath("pilatus", _isCt, !_isCt)
     if (_isCt) {
