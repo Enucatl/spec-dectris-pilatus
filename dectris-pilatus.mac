@@ -4,6 +4,10 @@ global _pilatusServerAddress
 _pilatusBasename = "image_"
 _pilatusIsOn = 0
 global _pilatusROIx1, _pilatusROIy1, _pilatusROIx2, _pilatusROIy2
+global _max_x
+global _max_y
+_max_x = 619
+_max_y = 487
 
 def pilatus_roi '{
     global _pilatusROIx1, _pilatusROIy1, _pilatusROIx2, _pilatusROIy2
@@ -15,8 +19,8 @@ def pilatus_roi '{
         _pilatusROIx1 = 0
     }
     else {
-        if ($1 > 619) {
-            _pilatusROIx1 = 619
+        if ($1 > _max_x) {
+            _pilatusROIx1 = _max_x
         }
         else {
             _pilatusROIx1 = $1
@@ -26,8 +30,8 @@ def pilatus_roi '{
         _pilatusROIy1 = 0
     }
     else {
-        if ($2 > 487) {
-            _pilatusROIy1 = 487
+        if ($2 > _max_y) {
+            _pilatusROIy1 = _max_y
         }
         else {
             _pilatusROIy1 = $2
@@ -37,8 +41,8 @@ def pilatus_roi '{
         _pilatusROIx2 = 0
     }
     else {
-        if ($3 > 619) {
-            _pilatusROIx2 = 619
+        if ($3 > _max_x) {
+            _pilatusROIx2 = _max_x
         }
         else {
             _pilatusROIx2 = $3
@@ -48,8 +52,8 @@ def pilatus_roi '{
         _pilatusROIy2 = 0
     }
     else {
-        if ($4 > 487) {
-            _pilatusROIy2 = 487
+        if ($4 > _max_y) {
+            _pilatusROIy2 = _max_y
         }
         else {
             _pilatusROIy2 = $4
@@ -101,31 +105,42 @@ def _pilatus_user_precount() '{
     global _isCt
     local filename
     local data_dir
+    local full_name
     if (!_pilatusIsOn) {
         return
     }
     filename = _pilatus_datafilename(_isCt)
     data_dir = _dir_absolute_datapath("pilatus", _isCt, !_isCt)
+    full_name = sprintf("%s%s", data_dir, filename)
     # display the file-name if this count is initiated by ct
     if (_isCt > 0) {
-        printf("Pilatus file name: %s%s\n", data_dir, filename)
+        printf("Pilatus file name: %s\n", full_name)
     }
     sock_put(sprintf("%s:41234", _pilatusServerAddress), sprintf("Exptime %f\n", COUNT_TIME))
     sock_get(sprintf("%s:41234", _pilatusServerAddress))
     sock_put(sprintf("%s:41234", _pilatusServerAddress), sprintf("Exposure %s\n", filename))
-    sock_get(sprintf("%s:41234", _pilatusServerAddress))
 }'
 
 def _pilatus_move_files_postcount() '{
     local data_dir
+    local full_name
     # distinguish between absolute paths and those relative to the 
     # home directory
     sock_get(sprintf("%s:41234", _pilatusServerAddress))
-    wait(8)
+    sock_get(sprintf("%s:41234", _pilatusServerAddress))
     data_dir = _dir_absolute_datapath("pilatus", _isCt, !_isCt)
+    filename = _pilatus_datafilename(_isCt)
+    full_name = sprintf("%s%s", data_dir, filename)
+    local skip_first_bytes, keep_bytes
+    skip_first_bytes = 4 * _max_y * _pilatusROIx1 + _pilatusROIy1 + 1
+    keep_bytes = 4 * (_pilatusROIy2 - _pilatusROIy1) * (_pilatusROIx2 - _pilatusROIx1)
+    unix(sprintf("ssh det@%s \'cd /home/det/spec_images && tail -c +%d %s | head -c %d %s > %s.tmp && mv %s.tmp %s\'",\\
+        _pilatusServerAddress, skip_first_bytes, filename, keep_bytes, filename, filename, filename, filename))
     if (_isCt) {
-        unix(sprintf("scp det@%s:~/spec_images/* %s > /dev/null", _pilatusServerAddress, data_dir))
-        unix(sprintf("ssh det@%s \'rm -rf /home/det/spec_images/*\'", _pilatusServerAddress))
+        unix(sprintf("scp det@%s:~/spec_images/%s %s > /dev/null",\\
+                    _pilatusServerAddress, filename, data_dir))
+        unix(sprintf("ssh det@%s \'rm /home/det/spec_images/%s\'",\\
+                    _pilatusServerAddress, filename))
     }
 }'
 
