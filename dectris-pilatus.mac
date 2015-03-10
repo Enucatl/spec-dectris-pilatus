@@ -75,14 +75,19 @@ def pilatuson '{
         connected = sock_par(sprintf("%s:41234", _pilatusServerAddress), "connect")
         if (connected == 1) {
             sock_put(sprintf("%s:41234", _pilatusServerAddress), "Nimages 1\n")
+            p "set N images to 1:", sock_get(sprintf("%s:41234", _pilatusServerAddress))
             sock_put(sprintf("%s:41234", _pilatusServerAddress), "SetThreshold 20000\n")
+            p "set threshold to 20 keV", sock_get(sprintf("%s:41234", _pilatusServerAddress))
             cdef("user_precount", "_pilatus_user_precount();", "pilatus_user_precount_key", 0x20)
             cdef("user_postcount", "_pilatus_move_files_postcount();", "pilatus_user_postcount_key", 0x20)
             cdef("user_scan_tail", "_pilatus_move_files_postscan();", "pilatus_move_files_postscan_key", 0x20)
             _pilatusIsOn = 1
             unix(sprintf("ssh det@%s \'mkdir -p /home/det/spec_images\'", _pilatusServerAddress))
             sock_put(sprintf("%s:41234", _pilatusServerAddress), "ImgPath /home/det/spec_images\n")
+            p "set image path to ~/spec_images", sock_get(sprintf("%s:41234", _pilatusServerAddress))
             sock_put(sprintf("%s:41234", _pilatusServerAddress), "LdFlatField off\n")
+            p "unload flat field correction", sock_get(sprintf("%s:41234", _pilatusServerAddress))
+            p "status is", sock_get(sprintf("%s:41234", _pilatusServerAddress))
         }
         else {
             printf("couldn\'t connect to the server %s:41234, check the ip address", _pilatusServerAddress)
@@ -106,15 +111,18 @@ def _pilatus_user_precount() '{
         printf("Pilatus file name: %s%s\n", data_dir, filename)
     }
     sock_put(sprintf("%s:41234", _pilatusServerAddress), sprintf("Exptime %f\n", COUNT_TIME))
+    p "set exposure time", sock_get(sprintf("%s:41234", _pilatusServerAddress))
     sock_put(sprintf("%s:41234", _pilatusServerAddress), sprintf("Exposure %s\n", filename))
+    p "expose", sock_get(sprintf("%s:41234", _pilatusServerAddress))
 }'
 
 def _pilatus_move_files_postcount() '{
     local data_dir
     # distinguish between absolute paths and those relative to the 
     # home directory
+    p sock_get(sprintf("%s:41234", _pilatusServerAddress))
+    wait(8)
     data_dir = _dir_absolute_datapath("pilatus", _isCt, !_isCt)
-    sleep(2)
     if (_isCt) {
         unix(sprintf("scp det@%s:~/spec_images/* %s > /dev/null", _pilatusServerAddress, data_dir))
         unix(sprintf("ssh det@%s \'rm -rf /home/det/spec_images/*\'", _pilatusServerAddress))
