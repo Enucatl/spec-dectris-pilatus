@@ -114,7 +114,7 @@ def _pilatus_move_files_postcount() '{
     # distinguish between absolute paths and those relative to the 
     # home directory
     data_dir = _dir_absolute_datapath("pilatus", _isCt, !_isCt)
-    sleep(1)
+    sleep(2)
     if (_isCt) {
         unix(sprintf("scp det@%s:~/spec_images/* %s > /dev/null", _pilatusServerAddress, data_dir))
         unix(sprintf("ssh det@%s \'rm -rf /home/det/spec_images/*\'", _pilatusServerAddress))
