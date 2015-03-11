@@ -121,6 +121,7 @@ def _pilatus_user_precount() '{
 }'
 
 def _pilatus_move_files_postcount() '{
+    global _pilatusROIx1, _pilatusROIy1, _pilatusROIx2, _pilatusROIy2
     local data_dir
     local full_name
     # distinguish between absolute paths and those relative to the 
@@ -130,11 +131,8 @@ def _pilatus_move_files_postcount() '{
     data_dir = _dir_absolute_datapath("pilatus", _isCt, !_isCt)
     filename = _pilatus_datafilename(_isCt)
     full_name = sprintf("%s%s", data_dir, filename)
-    local skip_first_bytes, keep_bytes
-    skip_first_bytes = 4 * _max_y * _pilatusROIx1 + _pilatusROIy1 + 1
-    keep_bytes = 4 * (_pilatusROIy2 - _pilatusROIy1) * (_pilatusROIx2 - _pilatusROIx1)
-    unix(sprintf("ssh det@%s \'cd /home/det/spec_images && tail -c +%d %s | head -c %d %s > %s.tmp && mv %s.tmp %s\'",\\
-        _pilatusServerAddress, skip_first_bytes, filename, keep_bytes, filename, filename, filename, filename))
+    unix(sprintf("ssh det@%s \'source .bash_profile; pyenv shell 3.4.1; dectris_pilatus_roi --roi %d %d %d %d /home/det/spec_images/%s\'",\\
+        _pilatusServerAddress, _pilatusROIx1, _pilatusROIy1, _pilatusROIx2, _pilatusROIy2, filename))
     if (_isCt) {
         unix(sprintf("scp det@%s:~/spec_images/%s %s > /dev/null",\\
                     _pilatusServerAddress, filename, data_dir))
