@@ -162,7 +162,7 @@ def pilatusoff '
     _pilatusIsOn = 0
     cdef("user_precount", "", "pilatus_user_precount_key", "delete")
     cdef("user_postcount", "", "pilatus_user_postcount_key", "delete")
-    cdef("user_postcount", "", "pilatus_move_files_postscan_key", "delete")
+    cdef("user_scan_tail", "", "pilatus_move_files_postscan_key", "delete")
     sock_par(sprintf("%s:41234", _pilatusServerAddress), "close")
 '
 
